@@ -1,0 +1,36 @@
+name: Sync and Deploy Documentation
+
+on:
+  repository_dispatch:
+    types: [sync_docs]  # 自定义事件类型，命名为 sync_docs
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the documentation repository
+      - name: Check out the documentation repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Git to pull from the main project
+      - name: Add main project as remote
+        run: |
+          git remote add main_project https://github.com/your-username/your-main-repo.git
+          git fetch main_project
+          git merge main_project/master --allow-unrelated-histories -m "Sync updates from main project"
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install  # or yarn install, based on your project
+
+      # Step 4: Build the static site
+      - name: Build the site
+        run: npm run build  # 根据项目配置构建命令
+
+      # Step 5: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/.vitepress/dist  # 根据项目构建目录
